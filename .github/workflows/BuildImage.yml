@@ -12,8 +12,8 @@ on:
 env:
   GITHUB_REPO: "linuxserver/docker-mods" #don't modify
   ENDPOINT: "linuxserver/mods" #don't modify
-  BASEIMAGE: "replace_baseimage" #replace
-  MODNAME: "replace_modname" #replace
+  BASEIMAGE: "calibre"
+  MODNAME: "kfxgen"
   MOD_VERSION: ${{ inputs.mod_version }} #don't modify
   MULTI_ARCH: "true" #set to false if not needed
 
@@ -21,6 +21,10 @@ jobs:
   set-vars:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
       - name: Set Vars
         id: outputs
         run: |
@@ -30,12 +34,12 @@ jobs:
           echo "MODNAME=${{ env.MODNAME }}" >> $GITHUB_OUTPUT
           echo "MULTI_ARCH=${{ env.MULTI_ARCH }}" >> $GITHUB_OUTPUT
           if [[ -z "${{ env.MOD_VERSION }}" ]]; then
-            # **** If the mod needs to be versioned, set the versioning logic below. Otherwise leave as is. ****
-            MOD_VERSION=""
+            MOD_VERSION=$(awk -F= '$1 == "ARG MOD_VERSION" {print $2}' Dockerfile)
           else
             MOD_VERSION=${{ env.MOD_VERSION }}
             echo "MOD_VERSION_OVERRIDE=true" >> $GITHUB_OUTPUT
           fi
+          [[ "$MOD_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
           echo "MOD_VERSION=${MOD_VERSION}" >> $GITHUB_OUTPUT
     outputs:
       GITHUB_REPO: ${{ steps.outputs.outputs.GITHUB_REPO }}

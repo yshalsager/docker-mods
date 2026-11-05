@@ -1,25 +1,22 @@
-# Rsync - Docker mod for openssh-server
+# kfxgen - Docker mod for Calibre
 
-This mod adds rsync to openssh-server, to be installed/updated during container start.
+Adds [kfxgen](https://github.com/jloutsch/kfxgen) to the LinuxServer.io Calibre image for native KFX conversion,
+without Wine or Kindle Previewer. Supports amd64/arm64 and s6 v3.
 
-In openssh-server docker arguments, set an environment variable `DOCKER_MODS=linuxserver/mods:openssh-server-rsync`
+Set `DOCKER_MODS=ghcr.io/linuxserver/mods:calibre-kfxgen` in your existing Calibre container configuration.
+Separate multiple mods with `|`. Recreate the container, then select **KFX** in Convert books.
 
-If adding multiple mods, enter them in an array separated by `|`, such as `DOCKER_MODS=linuxserver/mods:openssh-server-rsync|linuxserver/mods:openssh-server-mod2`
+**Disable KFX Output** if installed; it otherwise takes priority over kfxgen.
 
-# Mod creation instructions
+Back up `/config` first. At startup the mod installs its bundled plugin as `abc` into `/config/.config/calibre`,
+preserving preferences and disabled plugins. No runtime downloads. To uninstall, remove the mod variable,
+recreate the container, then remove kfxgen through Calibre's plugin preferences.
 
-* Fork the repo, create a new branch based on the branch `template`.
-* Edit the `Dockerfile` for the mod. `Dockerfile.complex` is only an example and included for reference; it should be deleted when done.
-* Inspect the `root` folder contents. Edit, add and remove as necessary.
-* After all init scripts and services are created, run `find ./  -path "./.git" -prune -o \( -name "run" -o -name "finish" -o -name "check" \) -not -perm -u=x,g=x,o=x -print -exec chmod +x {} +` to fix permissions.
-* Edit this readme with pertinent info, delete these instructions.
-* Finally edit the `.github/workflows/BuildImage.yml`. Customize the vars for `BASEIMAGE` and `MODNAME`. Set the versioning logic and `MULTI_ARCH` if needed.
-* Ask the team to create a new branch named `<baseimagename>-<modname>`. Baseimage should be the name of the image the mod will be applied to. The new branch will be based on the `template` branch.
-* Submit PR against the branch created by the team.
+Formatting, Arabic/RTL fidelity, and CLI options differ from Previewer. Test representative books on your Kindle.
+Secure the browser desktop according to LinuxServer's documentation.
 
+The plugin version/checksum and matching source version/commit are pinned in `Dockerfile`; update both version
+blocks together. Run `bash tests/smoke.sh` to test startup, permissions, conversion, and preference preservation.
 
-## Tips and tricks
-
-* Some images have helpers built in, these images are currently:
-    * [Openvscode-server](https://github.com/linuxserver/docker-openvscode-server/pull/10/files)
-    * [Code-server](https://github.com/linuxserver/docker-code-server/pull/95)
+GPLv3; see [LICENSE](LICENSE). The checksum-verified plugin, pinned source, and upstream license are bundled
+in `/defaults/kfxgen/`.

@@ -1,0 +1,5 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+set -e
+s6-setuidgid abc env CALIBRE_CONFIG_DIRECTORY=/config/.config/calibre calibre-customize -a /defaults/kfxgen/plugin.zip
+echo '**** kfxgen ready ****'
